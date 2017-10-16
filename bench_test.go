@@ -28,9 +28,9 @@ func BenchmarkHash_i_m15_p4(b *testing.B) { benchmarkHash(b, ModeArgon2i, 15, 4)
 func BenchmarkHash_i_m18_p1(b *testing.B) { benchmarkHash(b, ModeArgon2i, 18, 1) } // 256 MiB
 func BenchmarkHash_i_m18_p2(b *testing.B) { benchmarkHash(b, ModeArgon2i, 18, 2) }
 func BenchmarkHash_i_m18_p4(b *testing.B) { benchmarkHash(b, ModeArgon2i, 18, 4) }
-func BenchmarkHash_i_m20_p1(b *testing.B) { benchmarkHash(b, ModeArgon2i, 20, 1) } // 1024 MiB
-func BenchmarkHash_i_m20_p2(b *testing.B) { benchmarkHash(b, ModeArgon2i, 20, 2) }
-func BenchmarkHash_i_m20_p4(b *testing.B) { benchmarkHash(b, ModeArgon2i, 20, 4) }
+func BenchmarkHash_i_m19_p1(b *testing.B) { benchmarkHash(b, ModeArgon2i, 19, 1) } // 512 MiB
+func BenchmarkHash_i_m19_p2(b *testing.B) { benchmarkHash(b, ModeArgon2i, 19, 2) }
+func BenchmarkHash_i_m19_p4(b *testing.B) { benchmarkHash(b, ModeArgon2i, 19, 4) }
 
 func BenchmarkHash_d_m12_p1(b *testing.B) { benchmarkHash(b, ModeArgon2d, 12, 1) } // 4 MiB
 func BenchmarkHash_d_m12_p2(b *testing.B) { benchmarkHash(b, ModeArgon2d, 12, 2) }
@@ -54,9 +54,9 @@ func BenchmarkHash_id_m15_p4(b *testing.B) { benchmarkHash(b, ModeArgon2id, 15, 
 func BenchmarkHash_id_m18_p1(b *testing.B) { benchmarkHash(b, ModeArgon2id, 18, 1) } // 256 MiB
 func BenchmarkHash_id_m18_p2(b *testing.B) { benchmarkHash(b, ModeArgon2id, 18, 2) }
 func BenchmarkHash_id_m18_p4(b *testing.B) { benchmarkHash(b, ModeArgon2id, 18, 4) }
-func BenchmarkHash_id_m20_p1(b *testing.B) { benchmarkHash(b, ModeArgon2id, 20, 1) } // 1024 MiB
-func BenchmarkHash_id_m20_p2(b *testing.B) { benchmarkHash(b, ModeArgon2id, 20, 2) }
-func BenchmarkHash_id_m20_p4(b *testing.B) { benchmarkHash(b, ModeArgon2id, 20, 4) }
+func BenchmarkHash_id_m19_p1(b *testing.B) { benchmarkHash(b, ModeArgon2id, 19, 1) } // 512 MiB
+func BenchmarkHash_id_m19_p2(b *testing.B) { benchmarkHash(b, ModeArgon2id, 19, 2) }
+func BenchmarkHash_id_m19_p4(b *testing.B) { benchmarkHash(b, ModeArgon2id, 19, 4) }
 
 func benchmarkHash(b *testing.B, mode, memory, parallelism int) {
     ctx := NewContext(mode)
