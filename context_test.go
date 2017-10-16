@@ -129,7 +129,7 @@ func TestHashEncoded(t *testing.T) {
 	password := []byte("somepassword")
 	salt := []byte("somesalt")
 
-	expected := "$argon2d$v=19$m=4096,t=3,p=1$c29tZXNhbHQ$THaZx86KeqT+xuygENqvxaYIk3zu4wH0UmqzBL/wrdQ"
+	expected := "$argon2d$v=19$m=32768,t=3,p=1$c29tZXNhbHQ$8Gm1UBMkNkM82BrggUOl0zSQGyuQH/Appc1Mqdg+kmM"
 
 	s, err := ctx.HashEncoded( password, salt)
 	if err != nil {
@@ -140,7 +140,7 @@ func TestHashEncoded(t *testing.T) {
 	}
 
 	ctx.SetVersion(Version10)
-	expected = "$argon2d$v=16$m=4096,t=3,p=1$c29tZXNhbHQ$9zHzndOtdbtKI3zBlrpnnpjNj9FnrkeiK43kb8NuuMc"
+	expected = "$argon2d$v=16$m=32768,t=3,p=1$c29tZXNhbHQ$aM7+U1ohyBEu5q90wF/vB0GhkoLtJsvvTC+ZPBx9K7Q"
 
 	s, err = ctx.HashEncoded( password, salt)
 	if err != nil {
@@ -149,6 +149,8 @@ func TestHashEncoded(t *testing.T) {
 	if s != expected {
 		t.Fatalf("HashEncoded: got %q  want %q", s, expected)
 	}
+	example1();
+	example2();
 }
 
 func TestHash_Error(t *testing.T) {

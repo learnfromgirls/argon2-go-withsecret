@@ -127,6 +127,8 @@ func NewContext(mode ...int) *Context {
 		a2ctx: argon2.NewContext(m),
 	}
 
+	context.a2ctx.Memory = (1 << 15) // 32 MiB default gives about 100ms per op on normal laptop
+
 	return context
 }
 
@@ -188,6 +190,17 @@ func (ctx *Context) SetVersion(version int) (*Context) {
 // sets Context fields from defaults
 func (ctx *Context) SetMemory(memory int) (*Context) {
 	ctx.a2ctx.Memory = memory
+	return ctx;
+}
+
+// gets Context fields
+func (ctx *Context) GetMemory() (int) {
+	return ctx.a2ctx.Memory
+}
+
+// sets Context fields from defaults
+func (ctx *Context) SetParallelism(parallelism int) (*Context) {
+	ctx.a2ctx.Parallelism = parallelism
 	return ctx;
 }
 
