@@ -3,7 +3,7 @@ Support creating an argon2 context from encoding thus allowing verify with secre
 Has a default memory option is 32768 which gives 32Mbytes mem usage and about 100mS per op on a laptop. ( 10 attacker trials per second on laptop).
 Ultimately calls a the C library argon2 so is a fast as it gets.
 
-##Installation
+## Installation
 
 Install argon2 C library as detailed in
 [go-argon2](https://github.com/tvdburgt/go-argon2).
@@ -22,6 +22,8 @@ Test everything is installed correctly:
 $ cd $GOCODE/src/github.com/learnfromgirls/argon2-go-withsecret/
 $ go test
 $ go test -bench=.
+Note that some of the benchmarks (m19,m20,m21)require 512Mb, 1024Mb and 2048Mb so will correctly fail with a memory error on
+an AWS nano or micro EC2 instance.
 ```
 
 ## Usage

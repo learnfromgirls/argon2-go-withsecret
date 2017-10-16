@@ -57,6 +57,9 @@ func BenchmarkHash_id_m18_p4(b *testing.B) { benchmarkHash(b, ModeArgon2id, 18, 
 func BenchmarkHash_id_m19_p1(b *testing.B) { benchmarkHash(b, ModeArgon2id, 19, 1) } // 512 MiB
 func BenchmarkHash_id_m19_p2(b *testing.B) { benchmarkHash(b, ModeArgon2id, 19, 2) }
 func BenchmarkHash_id_m19_p4(b *testing.B) { benchmarkHash(b, ModeArgon2id, 19, 4) }
+func BenchmarkHash_id_m21_p1(b *testing.B) { benchmarkHash(b, ModeArgon2id, 21, 1) } // 2048 MiB
+func BenchmarkHash_id_m21_p2(b *testing.B) { benchmarkHash(b, ModeArgon2id, 21, 2) }
+func BenchmarkHash_id_m21_p4(b *testing.B) { benchmarkHash(b, ModeArgon2id, 21, 4) }
 
 func benchmarkHash(b *testing.B, mode, memory, parallelism int) {
     ctx := NewContext(mode)
