@@ -1,14 +1,15 @@
 # argon2-go-withsecret
 Supports creating an argon2 context from encoding thus allowing verify with secret and additional data.
-Has a default memory option of 32768 which gives 32Mbytes mem usage and about 100mS per op on a laptop. ( 10 attacker trials per second on laptop).
-Ultimately it calls the C library argon2 so is as fast as it gets.
 The use of a secret means the attacker cannot break your passwords with any hardware.
+It has a default mode of argon2id, memory option of 65536 and parallelism option of 2 which gives 64Mbytes mem usage and gives about 400ms per op on a cheap dual core laptop. ( 2 attacker trials per second on laptop).
+The calls to the library are serialized with a Mutex lock to provide automatic throttling and guaranteed stable memory usage under burst load conditions.
+Ultimately it calls the C library argon2 so it is as fast as it gets.
 
 But, should the attacker have obtained the secret,
 the argon2 algorithm is designed to be hard for specialist hardware to speed up.
 For example an attacker can rent GPU accelerated AWS EC2 instances (g3.16xlarge) with say 8000 cores and 488 Gbytes.
-With the default 32Mbytes per password trial,
-8000 cores will need 256GBytes of memory and hopefully the memory bus transfers will limit the throughput.
+With the default 64Mbytes per password trial,
+8000 cores will need 512GBytes of memory and hopefully the memory bus transfers will limit the throughput.
 It will be costing the attacker $45.6 per Hour to rent the instance (spot pricing).
 Changing the argon2 memory option to 256MBytes means it will still run on an AWS nano instance but the attacker
 will now only be able to use less than 2000 of his 8000 cores.
@@ -42,43 +43,55 @@ an AWS nano or micro EC2 instance.
 ```
 
 ## Usage
-both raw hashes and encoded hashes are supported via Context methods.
+```go
+import (
+	"fmt"
+	"github.com/learnfromgirls/argon2-go-withsecret"
+	"log"
+)
+```
 
-### Encoded hash with default configuration (argon2id 32Mbytes)
+### Encoded hash with default configuration (argon2id 64Mbytes)
 
 ```go
-    ctx := NewContext()
-    s, err := ctx.HashEncoded(  []byte("password"), []byte("somesalt"))
-    if err != nil {
-    	log.Fatal(err)
-    }
+	ctx := argon2_go_withsecret.NewContext()
+	s, err := ctx.HashEncoded([]byte("password"), []byte("somesalt"))
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    fmt.Printf("%s\n", s)
-    ok, err := ctx.VerifyEncoded(s, []byte("password"))
-    if err != nil {
-        	log.Fatal(err)
-    }
-    fmt.Printf("%v\n", ok)
+	fmt.Printf("%s\n", s)
+	ctx4v := argon2_go_withsecret.NewContext()
+	ok, err := ctx4v.VerifyEncoded(s, []byte("password"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%v\n", ok)
 ```
 
 
-### Encoded hash with custom configuration and secret (argon2i 64Mbytes secret)
+### Encoded hash with custom configuration and secret (argon2id 256Mbytes secret)
 
 ```go
-    ctx := NewContext(ModeArgon2i)
-    ctx.SetMemory(1 << 16)
-    ctx.SetSecret([]byte("secret"))
-    s, err := ctx.HashEncoded(  []byte("password"), []byte("somesalt"))
-    if err != nil {
-    	log.Fatal(err)
-    }
+	ctx := argon2_go_withsecret.NewContext(argon2_go_withsecret.ModeArgon2id)
+	ctx.SetMemory(1 << 18)
+	ctx.SetParallelism(2)
+	ctx.SetSecret([]byte("secret"))
+	s, err := ctx.HashEncoded([]byte("password"), []byte("somesalt"))
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    fmt.Printf("%s\n", s)
-    ok, err := ctx.VerifyEncoded(s, []byte("password"))
-    if err != nil {
-    	log.Fatal(err)
-    }
-    fmt.Printf("%v\n", ok)
+	fmt.Printf("%s\n", s)
+
+	//verifier mode, memory, parallelism etc will be set from encoding so no need to set here.
+	ctx4v := argon2_go_withsecret.NewContext()
+	ctx4v.SetSecret([]byte("secret"))
+	ok, err := ctx4v.VerifyEncoded(s, []byte("password"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%v detected mode=%v\n", ok, ctx4v.GetMode())
 ```
 
 

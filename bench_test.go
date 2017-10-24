@@ -51,6 +51,9 @@ func BenchmarkHash_id_m12_p4(b *testing.B) { benchmarkHash(b, ModeArgon2id, 12, 
 func BenchmarkHash_id_m15_p1(b *testing.B) { benchmarkHash(b, ModeArgon2id, 15, 1) } // 32 MiB
 func BenchmarkHash_id_m15_p2(b *testing.B) { benchmarkHash(b, ModeArgon2id, 15, 2) }
 func BenchmarkHash_id_m15_p4(b *testing.B) { benchmarkHash(b, ModeArgon2id, 15, 4) }
+func BenchmarkHash_id_m16_p1(b *testing.B) { benchmarkHash(b, ModeArgon2id, 16, 1) } // 64 MiB
+func BenchmarkHash_id_m16_p2(b *testing.B) { benchmarkHash(b, ModeArgon2id, 16, 2) }
+func BenchmarkHash_id_m16_p4(b *testing.B) { benchmarkHash(b, ModeArgon2id, 16, 4) }
 func BenchmarkHash_id_m18_p1(b *testing.B) { benchmarkHash(b, ModeArgon2id, 18, 1) } // 256 MiB
 func BenchmarkHash_id_m18_p2(b *testing.B) { benchmarkHash(b, ModeArgon2id, 18, 2) }
 func BenchmarkHash_id_m18_p4(b *testing.B) { benchmarkHash(b, ModeArgon2id, 18, 4) }
@@ -62,14 +65,14 @@ func BenchmarkHash_id_m21_p2(b *testing.B) { benchmarkHash(b, ModeArgon2id, 21, 
 func BenchmarkHash_id_m21_p4(b *testing.B) { benchmarkHash(b, ModeArgon2id, 21, 4) }
 
 func benchmarkHash(b *testing.B, mode, memory, parallelism int) {
-    ctx := NewContext(mode)
-    ctx.SetMemory(1 << uint(memory))
-    ctx.SetParallelism(parallelism)
+	ctx := NewContext(mode)
+	ctx.SetMemory(1 << uint(memory))
+	ctx.SetParallelism(parallelism)
 
 	b.SetBytes(int64(ctx.GetMemory()) << 10)
 
 	for n := 0; n < b.N; n++ {
-		if _, err := ctx.Hash( password, salt); err != nil {
+		if _, err := ctx.Hash(password, salt); err != nil {
 			b.Error(err)
 		}
 	}
