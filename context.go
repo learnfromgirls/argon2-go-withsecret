@@ -7,26 +7,28 @@ import (
 	"github.com/tvdburgt/go-argon2"
 	"strings"
 	"sync"
+	"crypto/rand"
+	"github.com/learnfromgirls/safesecrets"
 )
+
 var mutex = &sync.Mutex{}
 
-
 const (
-	ModeArgon2d  int = 0
-	ModeArgon2i  int = 1
+	ModeArgon2d int = 0
+	ModeArgon2i int = 1
 	ModeArgon2id int = 2
 )
 
 const (
-	Version10      int = 0x10
-	Version13      int = 0x13
+	Version10 int = 0x10
+	Version13 int = 0x13
 	VersionDefault int = 0x13
 )
 
 const (
-	FlagDefault       int = 0
+	FlagDefault int = 0
 	FlagClearPassword int = 1
-	FlagClearSecret   int = 2
+	FlagClearSecret int = 2
 )
 
 // Error represents the internal error code propagated from libargon2.
@@ -91,18 +93,18 @@ var (
 )
 
 var (
-	ErrEncodedFormat                 = errors.New("argon2-go-withsecret: cannot parse encodedhash")
-	ErrEncodedFormatNotSixParts      = errors.New("argon2-go-withsecret: cannot parse encodedhash. Not 6 parts")
-	ErrEncodedFormatUnknownType      = errors.New("argon2-go-withsecret: cannot parse encodedhash. Unknown Type")
-	ErrEncodedFormatNoV              = errors.New("argon2-go-withsecret: cannot parse encodedhash. No V")
-	ErrEncodedFormatNoM              = errors.New("argon2-go-withsecret: cannot parse encodedhash. No M")
-	ErrEncodedFormatNoP              = errors.New("argon2-go-withsecret: cannot parse encodedhash. No P")
-	ErrEncodedFormatNoT              = errors.New("argon2-go-withsecret: cannot parse encodedhash. No T")
+	ErrEncodedFormat = errors.New("argon2-go-withsecret: cannot parse encodedhash")
+	ErrEncodedFormatNotSixParts = errors.New("argon2-go-withsecret: cannot parse encodedhash. Not 6 parts")
+	ErrEncodedFormatUnknownType = errors.New("argon2-go-withsecret: cannot parse encodedhash. Unknown Type")
+	ErrEncodedFormatNoV = errors.New("argon2-go-withsecret: cannot parse encodedhash. No V")
+	ErrEncodedFormatNoM = errors.New("argon2-go-withsecret: cannot parse encodedhash. No M")
+	ErrEncodedFormatNoP = errors.New("argon2-go-withsecret: cannot parse encodedhash. No P")
+	ErrEncodedFormatNoT = errors.New("argon2-go-withsecret: cannot parse encodedhash. No T")
 	ErrEncodedFormatNotThreeSubParts = errors.New("argon2-go-withsecret: cannot parse encodedhash. Not 3 subparts")
-	ErrContext                       = errors.New("argon2: context is nil")
-	ErrPassword                      = errors.New("argon2: password is nil or empty")
-	ErrSalt                          = errors.New("argon2: salt is nil or empty")
-	ErrHash                          = errors.New("argon2: hash is nil or empty")
+	ErrContext = errors.New("argon2: context is nil")
+	ErrPassword = errors.New("argon2: password is nil or empty")
+	ErrSalt = errors.New("argon2: salt is nil or empty")
+	ErrHash = errors.New("argon2: hash is nil or empty")
 )
 
 type A2Context argon2.Context
@@ -114,12 +116,13 @@ type Context struct {
 	a2ctx          *argon2.Context
 }
 
-// NewContext initializes a new Argon2 context with reasonable defaults.
+// NewContext initializes a new Argon2 context with reasonable defaults for sub-second hashing time.
 // allows the mode to be set as an optional paramter
 func NewContext(mode ...int) *Context {
 
 	var m int = ModeArgon2id
-	if len(mode) >= 1 { //override my preferred default mode
+	if len(mode) >= 1 {
+		//override my preferred default mode
 		m = mode[0]
 	}
 	context := &Context{
@@ -133,6 +136,44 @@ func NewContext(mode ...int) *Context {
 	context.a2ctx.Parallelism = 2 // 2 core
 
 	return context
+}
+
+// NewVaultContext initializes a new Argon2 context with several seconds of hashing work time.
+// Suitable for administrator, master password and vault derived secret generation
+// allows the mode to be set as an optional paramter
+func NewVaultContext(mode ...int) *Context {
+
+	var m int = ModeArgon2id
+	if len(mode) >= 1 {
+		//override my preferred default mode
+		m = mode[0]
+	}
+	context := &Context{
+		Secret:         nil,
+		AssociatedData: nil,
+		Flags:          FlagDefault,
+		a2ctx:          argon2.NewContext(m),
+	}
+
+	context.a2ctx.Memory = (1 << 18) // 256 MiB default
+	context.a2ctx.Parallelism = 2 // 2 core
+	context.a2ctx.Iterations = 20 //more that the default 3
+
+	return context
+}
+
+
+
+func NewRandomSalt() ([] byte, error) {
+
+	salt := make([]byte, 16) //argon salt length is fixed at 16
+
+	_, err := rand.Read(salt)
+	if err == nil {
+		return salt, nil
+	} else {
+		return nil, err
+	}
 }
 
 func argon2_type2string(a2t int) string {
@@ -187,6 +228,17 @@ func (ctx *Context) SetMode(mode int) *Context {
 // gets Context fields
 func (ctx *Context) GetMode() int {
 	return ctx.a2ctx.Mode
+}
+
+// sets Context fields from defaults
+func (ctx *Context) SetIterations(iterations int) *Context {
+	ctx.a2ctx.Iterations = iterations
+	return ctx
+}
+
+// gets Context fields
+func (ctx *Context) GetIterations() int {
+	return ctx.a2ctx.Iterations
 }
 
 
@@ -291,7 +343,7 @@ func (ctx *Context) Hash(password []byte, salt []byte) (hash []byte, err error) 
 	mutex.Lock()
 	defer mutex.Unlock()
 	hash, err = argon2.Hash(ctx.a2ctx, password, salt)
-	return hash,err
+	return hash, err
 }
 
 // HashEncoded hashes a password and produces a crypt-like encoded string.
@@ -326,4 +378,19 @@ func (ctx *Context) VerifyEncoded(s string, password []byte) (bool, error) {
 		return false, err
 	}
 	return ctx.Verify(hash, password, salt)
+}
+
+func (ctx *Context) SetSecrets(password []byte, initialsalt []byte, ssa ...safesecrets.SecretSetter) (err error){
+	if len(ssa) >= 1 {
+		for i := 0; i < len(ssa); i++ {
+			hash, err := ctx.Hash(password, initialsalt)
+			if err != nil {
+				return err;
+			}
+			ssa[i].SetSecret(hash)
+
+			initialsalt = hash
+		}
+	}
+	return nil
 }

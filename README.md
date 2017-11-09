@@ -100,7 +100,7 @@ import (
 	fmt.Printf("%v detected mode=%v\n", ok, ctx4v.GetMode())
 ```
 
-##Limitations
+## Limitations
 A deliberately slow hash function still requires the password as input. If that password is transmitted from
 a web browser to the server before hashing then a Man In The Middle can just read the cleartext password.
 Companies can and do use remote web proxies such as ForcePoint to decrypt, inspect, and reencrypt your https traffic using dynamically generated "fake" SSL certificates.
