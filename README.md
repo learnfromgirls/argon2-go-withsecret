@@ -11,7 +11,7 @@ But, should the attacker have obtained the secret,
 the argon2 algorithm is designed to be hard for specialist hardware to speed up.
 
 See [Ballon Hashing] (https://eprint.iacr.org/2016/027.pdf)
-TLDR; You must use mode argon2id with largest memory you can afford.
+TL;DR You must use mode argon2id with largest memory you can afford.
 
 For example an attacker can rent GPU accelerated AWS EC2 instances (g3.16xlarge) with say 8000 cores and 488 Gbytes.
 With the default 64Mbytes per password trial,
@@ -38,7 +38,7 @@ Install go-argon2 go bindings as detailed in
 Test everything is installed correctly:
 
 ```
-$ go get github.com/learnfromgirls/argon2-go-withsecret
+$ go get -u github.com/learnfromgirls/argon2-go-withsecret
 $ cd $GOCODE/src/github.com/learnfromgirls/argon2-go-withsecret/
 $ go test
 The above test should pass.
@@ -82,7 +82,7 @@ import (
 	ctx := argon2_go_withsecret.NewContext(argon2_go_withsecret.ModeArgon2id)
 	ctx.SetMemory(1 << 18)
 	ctx.SetParallelism(2)
-	ctx.SetSecret([]byte("secret"))
+	ctx.SetSecret([]byte("secret")) //See github.com.learnfromgirls/safesecret for safe ways to set this secret.
 	s, err := ctx.HashEncoded([]byte("password"), []byte("somesalt"))
 	if err != nil {
 		log.Fatal(err)
@@ -106,11 +106,12 @@ a web browser to the server before hashing then a Man In The Middle can just rea
 Companies can and do use remote web proxies such as ForcePoint to decrypt, inspect, and reencrypt your https traffic using dynamically generated "fake" SSL certificates.
 To defend against this you could try hashing on the client but there is no efficient memoryhard implementation available for the browser.
 [MAKWA] (http://www.bolet.org/makwa/makwa-spec-20150422.pdf) offers hope via delegation.
+[safesecrets/example] (https://github.com/learnfromgirls/safesecrets/blob/master/example/example.go) provides a slow hash that only uses big integer arithmetic and so can run fast in javascript on the client as the V8 javascript engine has C++ compiled big integer support.
 
 [SRP] (https://en.wikipedia.org/wiki/Secure_Remote_Password_protocol) is a password based authenticated key exchange that will protect against Man In The Middle and will provide application level encryption keys.
 Again the hash function cannot be hard as it is performed by the feeble client. Unfortunately the server verifier is not hash protected.
-However this can be fixed. The server verifier is not required until after the client has sent proof of the session key and so there is still the chance to involve the serverside argon2id hash
-now that a shared key is available. E.g server could brute force to find v given clients proof and clues of v. Then run v through argon2id to verify.
+However this can be fixed. Again
+[safesecrets] (https://github.com/learnfromgirls/safesecrets) provides a slow hash secret derivation that could protect the verifier on disk.
 
 
 
